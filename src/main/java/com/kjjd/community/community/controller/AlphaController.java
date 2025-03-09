@@ -1,5 +1,7 @@
 package com.kjjd.community.community.controller;
 
+import com.kjjd.community.community.util.CommunityUtil;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
@@ -101,5 +103,22 @@ public class AlphaController {
         mapList.add(map);
         return mapList;
     }
+    @RequestMapping(path="/cookie/set")
+    @ResponseBody
+    public String setCookie(HttpServletResponse httpServletResponse)
+    {
+        Cookie cookie=new Cookie("code", CommunityUtil.generateUUID());
+        //生效范围
+        cookie.setPath("/community/alpha");
+        cookie.setMaxAge(10*60);
+        httpServletResponse.addCookie(cookie);
 
+        return "set cookie";
+    }
+    @RequestMapping(path = "/cookie/get", method = RequestMethod.GET)
+    @ResponseBody
+    public String getCookie(@CookieValue("code") String code) {
+        System.out.println(code);
+        return "get cookie";
+    }
 }
