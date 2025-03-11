@@ -1,8 +1,10 @@
 package com.kjjd.community.community;
 
 import com.kjjd.community.community.dao.DiscussPostMapper;
+import com.kjjd.community.community.dao.LoginTicketMapper;
 import com.kjjd.community.community.dao.UserMapper;
 import com.kjjd.community.community.entity.DiscussPost;
+import com.kjjd.community.community.entity.LoginTicket;
 import com.kjjd.community.community.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,8 @@ import java.util.List;
 public class MapperTests {
     @Autowired
     UserMapper userMapper;
-
+    @Autowired
+    LoginTicketMapper loginTicketMapper;
     @Test
     public void testSelectUser() {
         System.out.println(userMapper.selectById(13));
@@ -65,6 +68,28 @@ public class MapperTests {
         for(DiscussPost dis:discussPosts)
             System.out.println(dis);
 
+    }
+    @Test
+    public void testInsertLoginTicket()
+    {
+        LoginTicket loginTicket=new LoginTicket();
+        loginTicket.setUserId(101);
+        loginTicket.setTicket("abc");
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + 1000 * 60 * 10));
+
+        loginTicketMapper.insertLoginTicket(loginTicket);
+
+    }
+    @Test
+    public void testSelectLoginTicket()
+    {
+        LoginTicket loginTicket = loginTicketMapper.selectByTicket("abc");
+        System.out.println(loginTicket);
+        int cnt = loginTicketMapper.Update_Status("abc", 1);
+        System.out.println(cnt);
+        loginTicket = loginTicketMapper.selectByTicket("abc");
+        System.out.println(loginTicket);
     }
 
 }

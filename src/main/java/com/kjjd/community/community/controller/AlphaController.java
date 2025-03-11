@@ -4,6 +4,7 @@ import com.kjjd.community.community.util.CommunityUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -121,4 +122,19 @@ public class AlphaController {
         System.out.println(code);
         return "get cookie";
     }
+    @RequestMapping(path = "/session/set", method = RequestMethod.GET)
+    @ResponseBody
+    public String setSession(HttpSession session) {
+        session.setAttribute("name","2c1");
+        session.setAttribute("age","11");
+        return "set session";
+    }
+    @RequestMapping(path = "/session/get", method = RequestMethod.GET)
+    @ResponseBody
+    public String getSession(HttpSession session) {
+        System.out.println(session.getAttribute("age"));
+        System.out.println(session.getAttribute("name"));
+        return "get session";
+    }
+
 }

@@ -1,6 +1,9 @@
 package com.kjjd.community.community.service;
 
+import com.kjjd.community.community.dao.LoginTicketMapper;
 import com.kjjd.community.community.dao.UserMapper;
+import com.kjjd.community.community.entity.LoginTicket;
+import com.kjjd.community.community.entity.Page;
 import com.kjjd.community.community.entity.User;
 import com.kjjd.community.community.util.CommunityConstant;
 import com.kjjd.community.community.util.CommunityUtil;
@@ -24,6 +27,8 @@ public class UserService implements CommunityConstant {
     @Autowired
     private MailClient mailClient;
     @Autowired
+    private LoginTicketMapper loginTicketMapper;
+    @Autowired
     private TemplateEngine templateEngine;
     @Value("${community.path.domain}")
     private String domain;
@@ -36,11 +41,6 @@ public class UserService implements CommunityConstant {
     public Map<String,Object> register(User user)
     {
         Map<String,Object> map=new HashMap<>();
-        if(user==null)
-        {
-            throw new IllegalArgumentException("参数不能空");
-        }
-
         //验证参数
         if(StringUtils.isBlank(user.getUsername()))
         {
@@ -57,7 +57,6 @@ public class UserService implements CommunityConstant {
             map.put("emailMsg","邮箱不能为空!");
             return map;
         }
-
         //验证账号
         if(userMapper.selectByName(user.getUsername())!=null)
         {
@@ -69,7 +68,11 @@ public class UserService implements CommunityConstant {
             map.put("emailMsg","该邮箱已被注册!");
             return map;
         }
-
+        // 验证状态
+        if (user.getStatus() == 0) {
+            map.put("usernameMsg", "该账号未激活!");
+            return map;
+        }
         //配置账号
         user.setSalt(CommunityUtil.generateUUID().substring(0,5));
         user.setPassword(CommunityUtil.md5(user.getPassword()+user.getSalt()));
@@ -106,6 +109,42 @@ public class UserService implements CommunityConstant {
             return ACTIVATION_FAILURE;
         }
     }
-
+    public Map<String,Object> login(String username,String password,int expiredSeconds)
+    {
+        Map<String,Object> map=new HashMap<>();
+        if(username==null)
+        {
+            map.put("usernameMsg","账号不能为空");
+            return map;
+        }
+        if(password==null)
+        {
+            map.put("passwordMsg","密码不能为空");
+            return map;
+        }
+        User user=userMapper.selectByName(username);
+        if(user==null)
+        {
+            map.put("usernameMsg","账号不存在");
+            return map;
+        }
+        if(!CommunityUtil.md5(password+user.getSalt()).equals(user.getPassword()))
+        {
+            map.put("passwordMsg","密码错误");
+            return map;
+        }
+        LoginTicket loginTicket=new LoginTicket();
+        loginTicket.setUserId(user.getId());
+        loginTicket.setTicket(CommunityUtil.generateUUID());
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
+        loginTicketMapper.insertLoginTicket(loginTicket);
+        map.put("ticket",loginTicket.getTicket());
+        return map;
+    }
+    public void logout(String ticket)
+    {
+        loginTicketMapper.Update_Status(ticket,1);
+    }
 
 }
