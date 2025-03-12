@@ -146,5 +146,7 @@ public class UserService implements CommunityConstant {
     {
         loginTicketMapper.Update_Status(ticket,1);
     }
+    public LoginTicket selectByTikcet(String ticket) {return loginTicketMapper.selectByTicket(ticket);}
+    public int updateHeader(int userId,String headUrl) {return userMapper.updateHeader(userId,headUrl);}
 
 }
