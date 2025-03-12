@@ -1,5 +1,6 @@
 package com.kjjd.community.community.controller;
 
+import com.kjjd.community.community.annotation.LoginRequired;
 import com.kjjd.community.community.entity.User;
 import com.kjjd.community.community.service.UserService;
 import com.kjjd.community.community.util.CommunityUtil;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.lang.annotation.Retention;
 
 @Controller
 @RequestMapping(path ="/user")
@@ -40,11 +42,14 @@ public class UserController {
 
     private static final Logger logger= LoggerFactory.getLogger(UserController.class);
 
+    @LoginRequired
     @RequestMapping(path="/setting",method = RequestMethod.GET)
     public String setting()
     {
         return "/site/setting";
     }
+
+    @LoginRequired
     @RequestMapping(path="/upload",method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model)
     {
@@ -98,4 +103,26 @@ public class UserController {
         }
     }
 
+    @LoginRequired
+    @RequestMapping(path="/changePassword",method = RequestMethod.POST)
+    public String changePassword(String oldPassword ,String newPasswordFirst,String newPasswordSecond, Model model)
+    {
+        if (oldPassword == null||newPasswordFirst == null||newPasswordSecond == null) {
+            model.addAttribute("passwordError", "密码为空!");
+            return "/site/setting";
+        }
+        if (!newPasswordFirst.equals(newPasswordSecond)) {
+            model.addAttribute("passwordError", "重复密码不一致!");
+            return "/site/setting";
+        }
+        User user = hostHolder.getUser();
+        if(!CommunityUtil.md5(oldPassword+user.getSalt()).equals(user.getPassword()))
+        {
+            model.addAttribute("passwordError", "密码错误!");
+            return "/site/setting";
+        }
+        String password=CommunityUtil.md5(newPasswordFirst+user.getSalt());
+        userService.updatePassword(user.getId(),password);
+        return "redirect:/index";
+    }
 }

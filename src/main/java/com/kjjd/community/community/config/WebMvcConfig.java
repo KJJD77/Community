@@ -1,6 +1,7 @@
 package com.kjjd.community.community.config;
 
 import com.kjjd.community.community.controller.interceptor.AlphaInterceptor;
+import com.kjjd.community.community.controller.interceptor.LoginRequiredInterceptor;
 import com.kjjd.community.community.controller.interceptor.LoginTicketInterceptor;
 import com.kjjd.community.community.service.Alphaservice;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +16,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private AlphaInterceptor alphaInterceptor;
     @Autowired
     private LoginTicketInterceptor loginTicketInterceptor;
-
+    @Autowired
+    private LoginRequiredInterceptor loginRequiredInterceptor;
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(alphaInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg")
                 .addPathPatterns("/register", "/login");
         registry.addInterceptor(loginTicketInterceptor)
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
+        registry.addInterceptor(loginRequiredInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
     }
 }
