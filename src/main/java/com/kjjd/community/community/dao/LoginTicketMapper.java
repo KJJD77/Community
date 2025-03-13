@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface LoginTicketMapper {
-    @Update({"update login_ticket set status = #{status} where ticket=#{ticket}"})
+    @Update(    {"update login_ticket set status = #{status} where ticket=#{ticket}"})
     public int Update_Status(String ticket,int status);
 
     @Select({"select id,user_id,ticket,status,expired ",
