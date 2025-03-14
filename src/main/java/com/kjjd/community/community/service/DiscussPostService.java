@@ -1,12 +1,19 @@
 package com.kjjd.community.community.service;
 
 import com.kjjd.community.community.dao.DiscussPostMapper;
+import com.kjjd.community.community.dao.UserMapper;
 import com.kjjd.community.community.entity.DiscussPost;
+import com.kjjd.community.community.entity.User;
+import com.kjjd.community.community.util.CommunityUtil;
 import com.kjjd.community.community.util.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -15,6 +22,8 @@ public class DiscussPostService {
     private DiscussPostMapper discussPostMapper;
     @Autowired
     private SensitiveFilter sensitiveFilter;
+    @Autowired
+    private UserMapper userMapper;
     public List<DiscussPost> findDiscussPosts(int userId,int offset,int limit)
     {
         return discussPostMapper.selectDiscussPosts(userId,offset,limit);
@@ -37,6 +46,11 @@ public class DiscussPostService {
 
         return discussPostMapper.insertDiscussPost(discussPost);
     }
+    public DiscussPost selectDiscussPostById(int id)
+    {
+        return discussPostMapper.selectDiscussPostById(id);
+    }
+
 
 
 }

@@ -12,4 +12,6 @@ public interface DiscussPostMapper {
     //唯一一个且要在id中用，一定要取别名
     int selectDiscussPostRows(@Param("userId") int userId);
     int insertDiscussPost(DiscussPost discussPost);
+
+    DiscussPost selectDiscussPostById(int id);
 }
