@@ -21,4 +21,9 @@ public class CommentService {
         return commentMapper.selectCountByEntity(entityType,entityId);
     }
 
+    public int insertComment(Comment comment)
+    {
+        return commentMapper.insertComment(comment);
+    }
+
 }
