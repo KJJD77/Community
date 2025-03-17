@@ -2,6 +2,7 @@ package com.kjjd.community.community.controller;
 
 import com.kjjd.community.community.annotation.LoginRequired;
 import com.kjjd.community.community.entity.User;
+import com.kjjd.community.community.service.LikeService;
 import com.kjjd.community.community.service.UserService;
 import com.kjjd.community.community.util.CommunityUtil;
 import com.kjjd.community.community.util.HostHolder;
@@ -27,6 +28,9 @@ import java.lang.annotation.Retention;
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
@@ -125,4 +129,21 @@ public class UserController {
         userService.updatePassword(user.getId(),password);
         return "redirect:/index";
     }
+    @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId, Model model)
+    {
+        User user=userService.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("该用户不存在!");
+        }
+
+        // 用户
+        model.addAttribute("user", user);
+        // 点赞数量
+        int likeCount=likeService.findUserLikeCount(userId);
+
+        model.addAttribute("likeCount", likeCount);
+        return "/site/profile";
+    }
+
 }
