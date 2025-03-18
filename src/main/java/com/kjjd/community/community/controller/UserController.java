@@ -2,8 +2,10 @@ package com.kjjd.community.community.controller;
 
 import com.kjjd.community.community.annotation.LoginRequired;
 import com.kjjd.community.community.entity.User;
+import com.kjjd.community.community.service.FollowService;
 import com.kjjd.community.community.service.LikeService;
 import com.kjjd.community.community.service.UserService;
+import com.kjjd.community.community.util.CommunityConstant;
 import com.kjjd.community.community.util.CommunityUtil;
 import com.kjjd.community.community.util.HostHolder;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +27,7 @@ import java.lang.annotation.Retention;
 
 @Controller
 @RequestMapping(path ="/user")
-public class UserController {
+public class UserController implements CommunityConstant {
     @Autowired
     private UserService userService;
 
@@ -43,6 +45,9 @@ public class UserController {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private FollowService followService;
 
     private static final Logger logger= LoggerFactory.getLogger(UserController.class);
 
@@ -142,6 +147,18 @@ public class UserController {
         // 点赞数量
         int likeCount=likeService.findUserLikeCount(userId);
 
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(user.getId(), ENTITY_TYPE_USER);
+        //被关注数量
+        long followerCount = followService.findFollowerCount(user.getId(), ENTITY_TYPE_USER);
+        model.addAttribute("followerCount", followerCount);
+        model.addAttribute("followeeCount", followeeCount);
+
+        boolean hasFollowed = false;
+        if(hostHolder.getUser()!=null) {
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(), userId, ENTITY_TYPE_USER);
+        }
+        model.addAttribute("hasFollowed", hasFollowed);
         model.addAttribute("likeCount", likeCount);
         return "/site/profile";
     }

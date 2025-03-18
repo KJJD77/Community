@@ -5,6 +5,7 @@ import com.kjjd.community.community.entity.User;
 import com.kjjd.community.community.service.UserService;
 import com.kjjd.community.community.util.CommunityConstant;
 import com.kjjd.community.community.util.CommunityUtil;
+import com.kjjd.community.community.util.RedisKeyUtil;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,15 +15,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 
 import javax.imageio.ImageIO;
+import javax.management.loading.PrivateClassLoader;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class LoginController implements CommunityConstant {
@@ -31,7 +35,9 @@ public class LoginController implements CommunityConstant {
     private Producer producer;
     @Autowired
     private UserService userService;
-    @Value("server.servlet.context-path")
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Value("${server.servlet.context-path}")
     private String contextPath;
     @RequestMapping(path="/register",method = RequestMethod.GET)
     public String getRegisterPage()
@@ -78,13 +84,22 @@ public class LoginController implements CommunityConstant {
         return "/site/operate-result";
     }
     @RequestMapping(path="/kaptcha",method = RequestMethod.GET)
-    public void getKaptcha(HttpServletResponse response, HttpSession session)
+    public void getKaptcha(HttpServletResponse response/*, HttpSession session*/)
     {
         String text = producer.createText();
         BufferedImage image = producer.createImage(text);
+        String kaptchaOwner = CommunityUtil.generateUUID();
+        String kaptchaKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
 
-        session.setAttribute("kaptcha",text);
+//        session.setAttribute("kaptcha",text);
         //存入response
+
+        Cookie cookie=new Cookie("kaptchaOwner",kaptchaOwner);
+        cookie.setPath(contextPath);
+        cookie.setMaxAge(60);
+        response.addCookie(cookie);
+        redisTemplate.opsForValue().set(kaptchaKey,text,60,TimeUnit.SECONDS);
+
         response.setContentType("image/png");
         try {
             ServletOutputStream outputStream = response.getOutputStream();
@@ -95,9 +110,16 @@ public class LoginController implements CommunityConstant {
     }
     @RequestMapping(path = "/login",method = RequestMethod.POST)
     public String login(String username, String password, String code, boolean rememberme,
-                        Model model, HttpSession session, HttpServletResponse response)
+                        Model model/*, HttpSession session*/, HttpServletResponse response, @CookieValue("kaptchaOwner") String kaptchaOwner)
     {
-        String kaptcha=(String)session.getAttribute("kaptcha");
+//        String kaptcha=(String)session.getAttribute("kaptcha");
+        String kaptcha=null;
+        if(StringUtils.isNotBlank(kaptchaOwner))
+        {
+            String kaptchaKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha= (String)redisTemplate.opsForValue().get(kaptchaKey);
+
+        }
         if(StringUtils.isBlank(kaptcha)||StringUtils.isBlank(code)||!code.equalsIgnoreCase(kaptcha))
         {
             model.addAttribute("codeMsg","验证码不正确");
