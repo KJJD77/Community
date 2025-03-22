@@ -1,10 +1,9 @@
 package com.kjjd.community.community.controller;
 
+import ch.qos.logback.core.joran.conditional.ElseAction;
 import com.kjjd.community.community.dao.CommentMapper;
-import com.kjjd.community.community.entity.Comment;
-import com.kjjd.community.community.entity.DiscussPost;
-import com.kjjd.community.community.entity.Page;
-import com.kjjd.community.community.entity.User;
+import com.kjjd.community.community.entity.*;
+import com.kjjd.community.community.event.EventProducer;
 import com.kjjd.community.community.service.CommentService;
 import com.kjjd.community.community.service.DiscussPostService;
 import com.kjjd.community.community.service.LikeService;
@@ -39,7 +38,8 @@ public class DiscussPostController implements CommunityConstant {
 
     @Autowired
     private CommentService commentService;
-
+    @Autowired
+    EventProducer    eventProducer;
     @RequestMapping(path="/add",method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title,String content)
@@ -56,7 +56,8 @@ public class DiscussPostController implements CommunityConstant {
         discussPost.setCreateTime(new Date());
         discussPost.setUserId(user.getId());
         discussPostService.insertDiscussPost(discussPost);
-
+        Event event = new Event().setTopic(TOPIC_PUBLISH).setUserId(user.getId()).setEntityType(ENTITY_TYPE_POST).setEntityId(discussPost.getId());
+        eventProducer.send(event);
         return CommunityUtil.getJSONString(0,"成功发布");
     }
     @RequestMapping(path="/detail/{discussPostId}",method = RequestMethod.GET)
@@ -67,7 +68,11 @@ public class DiscussPostController implements CommunityConstant {
         model.addAttribute("post",discussPost);
         model.addAttribute("user",user);
         Long entityLikeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, discussPostId);
-        int entityLikeStatus = likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_POST, discussPostId);
+        int entityLikeStatus;
+        if(hostHolder.getUser()!=null)
+            entityLikeStatus = likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_POST, discussPostId);
+        else
+            entityLikeStatus=0;
         model.addAttribute("likeCount", entityLikeCount);
         model.addAttribute("likeStatus", entityLikeStatus);
 

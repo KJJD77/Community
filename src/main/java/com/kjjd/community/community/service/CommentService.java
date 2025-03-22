@@ -25,5 +25,10 @@ public class CommentService {
     {
         return commentMapper.insertComment(comment);
     }
+    public Comment selectCommentById(int commentId)
+    {
+        return commentMapper.selectCommentById(commentId);
+    }
+
 
 }

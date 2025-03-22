@@ -3,6 +3,7 @@ package com.kjjd.community.community.config;
 import com.kjjd.community.community.controller.interceptor.AlphaInterceptor;
 import com.kjjd.community.community.controller.interceptor.LoginRequiredInterceptor;
 import com.kjjd.community.community.controller.interceptor.LoginTicketInterceptor;
+import com.kjjd.community.community.controller.interceptor.MessageInterceptor;
 import com.kjjd.community.community.service.Alphaservice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.transform.impl.AddInitTransformer;
@@ -18,6 +19,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private LoginTicketInterceptor loginTicketInterceptor;
     @Autowired
     private LoginRequiredInterceptor loginRequiredInterceptor;
+    @Autowired
+    private MessageInterceptor messageInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(alphaInterceptor)
@@ -26,6 +30,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginTicketInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
         registry.addInterceptor(loginRequiredInterceptor)
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
+        registry.addInterceptor(messageInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
     }
 }

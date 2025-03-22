@@ -16,7 +16,7 @@ public class LikeService {
     RedisTemplate redisTemplate;
     public void like(int userId,int entityType,int entityId,int entityUserId)
     {
-        //        if(redisTemplate.opsForSet().isMember(entityKey,userId))
+//                if(redisTemplate.opsForSet().isMember(entityKey,userId))
 //        {
 //            redisTemplate.opsForSet().remove(entityKey,userId);
 //        }
@@ -64,7 +64,7 @@ public class LikeService {
     {
         String userLikeKey = RedisKeyUtil.getUserLikeKey(userId);
         Integer count=(Integer) redisTemplate.opsForValue().get(userLikeKey);
-        return count == null? 0 : count;
+        return count == null ? 0 : count;
     }
 
 }

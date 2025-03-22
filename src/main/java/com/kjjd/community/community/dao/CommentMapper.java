@@ -17,4 +17,7 @@ public interface CommentMapper {
 
     @Insert("insert into comment (user_id, entity_type, entity_id, target_id, content, status, create_time) values(#{userId},#{entityType},#{entityId},#{targetId},#{content},#{status},#{createTime})")
     int insertComment(Comment comment);
+
+    @Select("SELECT id,user_id,entity_id,entity_type,target_id,content,status,create_time from comment where id=#{commentId} ")
+    Comment selectCommentById(int commentId);
 }

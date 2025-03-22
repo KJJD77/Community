@@ -21,5 +21,4 @@ public class LoggerTests {
         logger.warn("warn now");
         logger.error("error now");
     }
-
 }
