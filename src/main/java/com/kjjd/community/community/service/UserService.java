@@ -13,14 +13,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -196,4 +195,22 @@ public class UserService implements CommunityConstant {
         redisTemplate.delete(redisKey);
     }
 
+    public Collection<? extends GrantedAuthority> getAuthorities(int userId) {
+        User user = this.findUserById(userId);
+
+        String role;
+        switch (user.getType()) {
+            case 1:
+                role = AUTHORITY_ADMIN;
+                break;
+            case 2:
+                role = AUTHORITY_MODERATOR;
+                break;
+            default:
+                role = AUTHORITY_USER;
+        }
+
+        // 使用 SimpleGrantedAuthority，Spring Security 能正确解析
+        return List.of(new SimpleGrantedAuthority(role));
+    }
 }

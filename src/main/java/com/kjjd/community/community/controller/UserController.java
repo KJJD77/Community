@@ -55,6 +55,7 @@ public class UserController implements CommunityConstant {
     @RequestMapping(path="/setting",method = RequestMethod.GET)
     public String setting()
     {
+
         return "/site/setting";
     }
 

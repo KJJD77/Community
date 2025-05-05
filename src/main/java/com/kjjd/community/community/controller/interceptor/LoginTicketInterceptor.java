@@ -5,9 +5,15 @@ import com.kjjd.community.community.entity.User;
 import com.kjjd.community.community.service.UserService;
 import com.kjjd.community.community.util.CookieUtil;
 import com.kjjd.community.community.util.HostHolder;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -31,6 +37,10 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
                 int userId = loginTicket.getUserId();
                 User user = userService.findUserById(userId);
                 hostHolder.setUser(user);
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        user, user.getPassword(), userService.getAuthorities(user.getId()));
+                SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+                System.out.println("当前 SecurityContext 里的用户：" + SecurityContextHolder.getContext().getAuthentication());
             }
         }
         return true;
@@ -47,5 +57,6 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         hostHolder.clear();
+        SecurityContextHolder.clearContext();
     }
 }
